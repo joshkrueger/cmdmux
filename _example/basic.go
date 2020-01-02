@@ -15,22 +15,27 @@ func main() {
 	})
 
 	router.Handle("cmd :arg one", func(a cmdmux.Args) error {
-		fmt.Printf("Command One: Arg = %s\n", a[":arg"])
+		fmt.Printf("Command One: Arg = %s\n", a.Get("arg"))
 		return nil
 	})
 
 	router.Handle("cmd :arg two", func(a cmdmux.Args) error {
-		fmt.Printf("Command Two: Arg = %s\n", a[":arg"])
+		fmt.Printf("Command Two: Arg = %s\n", a.Get("arg"))
 		return nil
 	})
 
 	router.Handle("cmd :arg two :more", func(a cmdmux.Args) error {
-		fmt.Printf("Command Two: Arg = %s | More = %s\n", a[":arg"], a[":more"])
+		fmt.Printf("Command Two: Arg = %s | More = %s\n", a.Get("arg"), a.Get("more"))
 		return nil
 	})
 
 	router.Handle("cmd :arg", func(a cmdmux.Args) error {
-		fmt.Printf("Command: Arg = %s\n", a[":arg"])
+		fmt.Printf("Command: Arg = %s\n", a.Get("arg"))
+		return nil
+	})
+
+	router.Handle("md :arg", func(a cmdmux.Args) error {
+		fmt.Printf("Metadata Command: Arg = %s | Metadata[foo] = %s \n", a.Get("arg"), a.GetMeta("foo"))
 		return nil
 	})
 
@@ -50,4 +55,8 @@ func main() {
 			fmt.Println("ERROR:", err)
 		}
 	}
+
+	router.ExecuteWithMetadata(cmdmux.Metadata{
+		"foo": "baz",
+	}, "md bar")
 }

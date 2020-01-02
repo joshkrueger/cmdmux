@@ -47,22 +47,22 @@ func (n *node) getChild(token string) *node {
 func (n *node) Get(path []string) (Handler, Args, error) {
 	trie := n
 
-	argList := make(Args)
+	args := NewArgs()
 
 	for _, token := range path {
 		c := trie.getChild(token)
 		if c == nil {
-			return nil, argList, fmt.Errorf("not found")
+			return nil, args, fmt.Errorf("not found")
 		}
 
 		if c.class == argNodeClass {
-			argList[c.path] = token
+			args.Set(strings.TrimPrefix(c.path, ":"), token)
 		}
 
 		trie = c
 	}
 
-	return trie.handle, argList, nil
+	return trie.handle, args, nil
 }
 
 func (n *node) InsertChild(path []string, handle Handler) error {
