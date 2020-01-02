@@ -6,7 +6,7 @@ import (
 
 func TestDefaultTokenizer(t *testing.T) {
 
-	input := "hello this is a test"
+	input := " hello this is a test"
 	expected := []string{"hello", "this", "is", "a", "test"}
 
 	output := DefaultTokenizer(input)
@@ -25,4 +25,29 @@ func pathMatch(l, r []string) bool {
 		}
 	}
 	return true
+}
+
+func TestArgs(t *testing.T) {
+	args := NewArgs()
+
+	args.Set("foo", "bar")
+	args.SetMeta("foo", "not-bar")
+
+	if args.Get("foo") != "bar" {
+		t.Error("Args didn't return expected value")
+	}
+
+	md := make(Metadata)
+	md["foo"] = "not-bar"
+	md["bar"] = "not-foo"
+
+	args.SetMetadata(md)
+
+	if args.GetMeta("foo") != "not-bar" {
+		t.Error("Args metadata didn't return expected value")
+	}
+
+	if args.GetMeta("bar") != "not-foo" {
+		t.Error("Args metadata didn't return expected value")
+	}
 }

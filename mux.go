@@ -24,7 +24,46 @@ type Mux struct {
 }
 
 // Args is a collection of arguments extracted from an input command
-type Args map[string]string
+type Args struct {
+	data map[string]string
+	md   Metadata
+}
+
+// NewArgs provies an empty Args
+func NewArgs() Args {
+	return Args{
+		data: make(map[string]string),
+		md:   make(Metadata),
+	}
+}
+
+// Get returns the value of a named argument
+func (a *Args) Get(key string) string {
+	return a.data[key]
+}
+
+// Set stores the value of a named argument
+func (a *Args) Set(key, value string) {
+	a.data[key] = value
+}
+
+// Get returns the value of a metadata value
+func (a *Args) GetMeta(key string) string {
+	return a.md[key]
+}
+
+// Set stores the value of a metadata key
+func (a *Args) SetMeta(key, value string) {
+	a.md[key] = value
+}
+
+// SetMetadata assigns the provided Metadata to Args, overwriting any existing values
+func (a *Args) SetMetadata(md Metadata) {
+	a.md = md
+}
+
+// Metadata is a collection of arguments set by the caller of ExecuteWithMetadata
+type Metadata map[string]string
 
 // The Handler type is used by functions registered to a command path
 // in the prefix trie
@@ -51,9 +90,16 @@ func (m *Mux) tokenize(input string) []string {
 	return DefaultTokenizer(input)
 }
 
-// Execute accepts an input command, searches the trie for a handler, runs
-// it, or returns ErrNotFound if a handler was not located
+// Execute is the same as ExecuteWithMetadata, except it only accepts an input
+// and passes along an empty Metadata
 func (m *Mux) Execute(input string) error {
+	md := make(Metadata)
+	return m.ExecuteWithMetadata(md, input)
+}
+
+// ExecuteWithMetadata accepts Metadata and an input command, searches the trie
+// for a handler, runs it, or returns ErrNotFound if a handler was not located
+func (m *Mux) ExecuteWithMetadata(md Metadata, input string) error {
 	path := m.tokenize(input)
 	h, a, err := m.trie.Get(path)
 	if err != nil {
@@ -64,6 +110,7 @@ func (m *Mux) Execute(input string) error {
 		return ErrNotFound
 	}
 
+	a.SetMetadata(md)
 	return h(a)
 }
 
